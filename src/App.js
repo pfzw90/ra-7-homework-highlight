@@ -32,41 +32,48 @@ function Article(props) {
         </div>
     )
 };
-Article.displayName = 'article'
+
 
 function Video(props) {
     return (
         <div className="item item-video">
-            <iframe src={props.url} frameBorder="0" allow="autoplay; encrypted-media" allowFSullscreen></iframe>
+            <iframe src={props.url} frameBorder="0" allow="autoplay; encrypted-media" allowFullScreen></iframe>
             <p className="views">Просмотров: {props.views}</p>
         </div>
     )
 };
-Video.displayName = 'video'
 
 
+const PopularArticle = withPopular(Article);
+const PopularVideo = withPopular(Video);
+const NewArticle = withNew(Article)
+const NewVideo = withNew(Video)
 
-const HighlightedItem = WithHighlight(Article,Video);
+const HighlightedArticle =  WithHighlight(Article)
+const HighlightedVideo =  WithHighlight(Video)
 
 function List(props) {
-    return props.list.map(item => (HighlightedItem({...item})));
+  return (
+    props.list.map(item => {
+      if (item.type === 'article') return (<HighlightedArticle {...item} key={shortid.generate()}/>) 
+      else return (<HighlightedVideo {...item} key={shortid.generate()}/>)    
+    })
+  )
 };
 
-function WithHighlight(...Components) {
+function WithHighlight(Component) {
   return function Wrapper(props) {
-    const id = shortid.generate()
     const {views, type} = props;
-    const Component = Components.find((c) => c.displayName === type);
- 
+   
     switch (true) {
       case (views > 1000):
-        const PopularItem = withPopular(Component)
-        return <PopularItem {...props} key={id}/>
+        if (type === 'article') return <PopularArticle {...props}/>
+        else return <PopularVideo {...props}/>
       case (views < 100):
-        const NewItem = withNew(Component)
-        return <NewItem {...props} key={id}/>
+        if (type === 'article') return <NewArticle {...props}/>
+        else return <NewVideo {...props}/>
       default:
-        return <Component {...props} key={id}/>;
+        return <Component {...props} />
     }
   }
 }
